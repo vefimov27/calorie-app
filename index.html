@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Счётчик калорий</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -123,11 +124,12 @@
       background: var(--tg-theme-button-color, #2aabee);
       color: var(--tg-theme-button-text-color, #ffffff);
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: transform 0.15s ease, opacity 0.2s;
     }
 
     .btn-add:active {
-      opacity: 0.8;
+      transform: scale(0.97);
+      opacity: 0.9;
     }
 
     .hero-block {
@@ -190,6 +192,18 @@
       margin-bottom: 6px;
       font-size: 14px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      animation: foodItemFadeIn 0.35s ease-out forwards;
+    }
+
+    @keyframes foodItemFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .food-name {
@@ -501,7 +515,7 @@
       height: 100%;
       border-radius: 4px;
       background: var(--tg-theme-button-color, #2aabee);
-      transition: width 0.3s ease, background 0.2s ease;
+      transition: width 0.5s ease-in-out, background 0.2s ease;
     }
 
     .progress-bar-fill.over-limit {
@@ -734,8 +748,22 @@
     function haptic(type, arg) {
       if (!tg?.HapticFeedback) return;
       if (type === 'impactOccurred') tg.HapticFeedback.impactOccurred(arg || 'light');
+      else if (type === 'notificationOccurred') tg.HapticFeedback.notificationOccurred(arg || 'success');
       else if (type === 'selectionChanged') tg.HapticFeedback.selectionChanged();
       else tg.HapticFeedback[type]?.(arg);
+    }
+
+    const CONFETTI_STORAGE_KEY = 'calorie_app_confetti_date';
+
+    function tryConfettiOnGoalReached(total, goal) {
+      if (!goal || goal <= 0 || total < goal) return;
+      const today = getTodayKey();
+      if (localStorage.getItem(CONFETTI_STORAGE_KEY) === today) return;
+      localStorage.setItem(CONFETTI_STORAGE_KEY, today);
+      haptic('notificationOccurred', 'success');
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      }
     }
 
     function getTodayKey() {
@@ -794,8 +822,10 @@
         carbs: (acc.carbs || 0) + (Number(f.carbs) || 0)
       }), { protein: 0, fat: 0, carbs: 0 });
 
-      updateHero(total, getGoal(), bju);
-      updateProgress(total, getGoal());
+      const goal = getGoal();
+      updateHero(total, goal, bju);
+      updateProgress(total, goal);
+      tryConfettiOnGoalReached(total, goal);
 
       const drawerList = document.getElementById('todayListContent');
       if (foods.length === 0) {
@@ -815,7 +845,7 @@
 
       drawerList.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', () => {
-          haptic('impactOccurred');
+          haptic('impactOccurred', 'medium');
           const idx = parseInt(btn.dataset.index, 10);
           const newFoods = getFoods().filter((_, i) => i !== idx);
           saveFoods(newFoods);
