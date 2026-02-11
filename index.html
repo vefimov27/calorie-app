@@ -36,9 +36,10 @@
 
     .form {
       background: var(--tg-theme-secondary-bg-color, #242f3d);
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
     }
 
     .input-group {
@@ -57,8 +58,8 @@
       right: 0;
       margin-top: 4px;
       background: var(--tg-theme-secondary-bg-color, #242f3d);
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
       max-height: 200px;
       overflow-y: auto;
       z-index: 100;
@@ -118,7 +119,7 @@
       font-size: 16px;
       font-weight: 600;
       border: none;
-      border-radius: 12px;
+      border-radius: 16px;
       background: var(--tg-theme-button-color, #2aabee);
       color: var(--tg-theme-button-text-color, #ffffff);
       cursor: pointer;
@@ -129,30 +130,49 @@
       opacity: 0.8;
     }
 
-    .total-block {
-      background: var(--tg-theme-secondary-bg-color, #242f3d);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
+    .hero-block {
       text-align: center;
+      margin-bottom: 16px;
     }
 
-    .total-label {
-      font-size: 14px;
+    .hero-calories {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--tg-theme-text-color, #ffffff);
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+
+    .hero-remaining {
+      font-size: 13px;
       color: var(--tg-theme-hint-color, #8e8e93);
-      margin-bottom: 4px;
+      margin-top: 4px;
     }
 
-    .total-value {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--tg-theme-button-color, #2aabee);
+    .bju-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--tg-theme-hint-color, #8e8e93);
+    }
+
+    .bju-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .bju-item span:first-child {
+      color: var(--tg-theme-text-color, #ffffff);
+      font-weight: 600;
     }
 
     .list-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       color: var(--tg-theme-text-color, #ffffff);
     }
 
@@ -165,10 +185,11 @@
       justify-content: space-between;
       align-items: center;
       background: var(--tg-theme-secondary-bg-color, #242f3d);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      font-size: 15px;
+      border-radius: 16px;
+      padding: 10px 14px;
+      margin-bottom: 6px;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .food-name {
@@ -176,32 +197,115 @@
       color: var(--tg-theme-text-color, #ffffff);
     }
 
+    .food-item-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .food-calories {
       font-weight: 600;
       color: var(--tg-theme-button-color, #2aabee);
+      font-size: 13px;
     }
 
     .empty-state {
       text-align: center;
-      padding: 40px 20px;
+      padding: 32px 20px;
       color: var(--tg-theme-hint-color, #8e8e93);
-      font-size: 15px;
+      font-size: 14px;
     }
 
     .btn-delete {
       background: transparent;
       border: none;
       color: var(--tg-theme-hint-color, #8e8e93);
-      font-size: 20px;
+      font-size: 16px;
       cursor: pointer;
       padding: 4px;
-      margin-left: 8px;
-      opacity: 0.7;
+      opacity: 0.8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      min-height: 32px;
+      border-radius: 8px;
     }
 
-    .btn-delete:hover {
+    .btn-delete:hover,
+    .btn-delete:active {
       opacity: 1;
-      color: #ff6b6b;
+      color: var(--tg-theme-destructive-text-color, #ff6b6b);
+      background: rgba(255, 107, 107, 0.15);
+    }
+
+    .btn-history {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid var(--tg-theme-button-color, #2aabee);
+      border-radius: 16px;
+      background: transparent;
+      color: var(--tg-theme-button-color, #2aabee);
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: opacity 0.2s;
+    }
+
+    .btn-history:hover,
+    .btn-history:active {
+      opacity: 0.9;
+      background: rgba(42, 171, 238, 0.1);
+    }
+
+    .history-modal .modal {
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .history-list {
+      overflow-y: auto;
+      max-height: 50vh;
+      margin-top: 8px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 14px;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-date {
+      color: var(--tg-theme-text-color, #ffffff);
+      font-weight: 500;
+    }
+
+    .history-cal {
+      color: var(--tg-theme-button-color, #2aabee);
+      font-weight: 600;
+      margin-right: 12px;
+    }
+
+    .history-status {
+      font-size: 18px;
+    }
+
+    .history-status.ok {
+      color: var(--tg-theme-button-color, #2aabee);
+    }
+
+    .history-status.fail {
+      color: var(--tg-theme-destructive-text-color, #ff6b6b);
     }
 
     /* Модалка цели */
@@ -269,9 +373,10 @@
     /* Прогресс-бар */
     .progress-section {
       background: var(--tg-theme-secondary-bg-color, #242f3d);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 14px;
       margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
     }
 
     .progress-header {
@@ -348,8 +453,28 @@
     </div>
   </div>
 
+  <!-- Модалка истории -->
+  <div class="modal-overlay history-modal" id="historyModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-title">📋 История за 7 дней</div>
+      <div class="modal-subtitle">Сумма калорий и выполнение цели</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
   <div class="container">
     <h1>🍽 Счётчик калорий</h1>
+
+    <!-- Главный показатель -->
+    <div class="hero-block">
+      <div class="hero-calories" id="heroCalories">0</div>
+      <div class="hero-remaining" id="heroRemaining">осталось: — ккал</div>
+      <div class="bju-row" id="bjuRow">
+        <span class="bju-item">Б <span id="bjuProtein">0</span>г</span>
+        <span class="bju-item">Ж <span id="bjuFat">0</span>г</span>
+        <span class="bju-item">У <span id="bjuCarbs">0</span>г</span>
+      </div>
+    </div>
 
     <!-- Прогресс-бар цели -->
     <div class="progress-section" id="progressSection" style="display: none;">
@@ -378,10 +503,7 @@
       <button type="submit" class="btn-add">Добавить</button>
     </form>
 
-    <div class="total-block">
-      <div class="total-label">Калорий за сегодня</div>
-      <div class="total-value" id="totalCalories">0</div>
-    </div>
+    <button type="button" class="btn-history" id="btnHistory">История за 7 дней</button>
 
     <div class="list-title">Ваш список</div>
     <ul class="food-list" id="foodList">
@@ -442,92 +564,161 @@
       }
     }
 
+    function updateHero(total, goal, bju) {
+      document.getElementById('heroCalories').textContent = total;
+      const rem = goal && goal > 0 ? Math.max(0, goal - total) : null;
+      document.getElementById('heroRemaining').textContent = rem !== null
+        ? 'осталось: ' + rem + ' ккал'
+        : 'осталось: — ккал';
+      document.getElementById('bjuProtein').textContent = Math.round(bju.protein || 0);
+      document.getElementById('bjuFat').textContent = Math.round(bju.fat || 0);
+      document.getElementById('bjuCarbs').textContent = Math.round(bju.carbs || 0);
+    }
+
+    function estimateBJU(calories) {
+      return {
+        protein: Math.round(calories * 0.25 / 4),
+        fat: Math.round(calories * 0.3 / 9),
+        carbs: Math.round(calories * 0.45 / 4)
+      };
+    }
+
+    function getBJUFromDb(name, calories) {
+      const match = FOOD_DATABASE.find(f => f.name.toLowerCase() === name.trim().toLowerCase());
+      if (match && match.protein != null) {
+        const k = match.calories > 0 ? calories / match.calories : 1;
+        return {
+          protein: (match.protein || 0) * k,
+          fat: (match.fat || 0) * k,
+          carbs: (match.carbs || 0) * k
+        };
+      }
+      return estimateBJU(calories);
+    }
+
     const FOOD_DATABASE = [
-      { name: 'Куриное филе', calories: 165 },
-      { name: 'Яблоко', calories: 52 },
-      { name: 'Рис', calories: 130 },
-      { name: 'Рис отварной', calories: 116 },
-      { name: 'Банан', calories: 89 },
-      { name: 'Яйцо варёное', calories: 155 },
-      { name: 'Яйцо', calories: 155 },
-      { name: 'Овсянка', calories: 68 },
-      { name: 'Овсяная каша', calories: 88 },
-      { name: 'Гречка', calories: 132 },
-      { name: 'Гречка отварная', calories: 101 },
-      { name: 'Молоко', calories: 42 },
-      { name: 'Молоко 2.5%', calories: 52 },
-      { name: 'Кефир', calories: 50 },
-      { name: 'Творог', calories: 101 },
-      { name: 'Творог 5%', calories: 121 },
-      { name: 'Сыр', calories: 402 },
-      { name: 'Хлеб белый', calories: 265 },
-      { name: 'Хлеб чёрный', calories: 201 },
-      { name: 'Картофель', calories: 77 },
-      { name: 'Картофель жареный', calories: 192 },
-      { name: 'Макароны', calories: 131 },
-      { name: 'Макароны отварные', calories: 112 },
-      { name: 'Лосось', calories: 208 },
-      { name: 'Говядина', calories: 250 },
-      { name: 'Свинина', calories: 242 },
-      { name: 'Колбаса', calories: 301 },
-      { name: 'Сосиски', calories: 277 },
-      { name: 'Котлета', calories: 220 },
-      { name: 'Салат овощной', calories: 65 },
-      { name: 'Огурец', calories: 15 },
-      { name: 'Помидор', calories: 18 },
-      { name: 'Морковь', calories: 41 },
-      { name: 'Брокколи', calories: 34 },
-      { name: 'Шоколад молочный', calories: 535 },
-      { name: 'Шоколад тёмный', calories: 546 },
-      { name: 'Печенье', calories: 417 },
-      { name: 'Мёд', calories: 304 },
-      { name: 'Сахар', calories: 398 },
-      { name: 'Йогурт', calories: 66 },
-      { name: 'Курица варёная', calories: 170 },
-      { name: 'Кофе', calories: 2 },
-      { name: 'Чай', calories: 1 },
-      { name: 'Сок апельсиновый', calories: 45 },
-      { name: 'Вода', calories: 0 },
-      { name: 'Пицца', calories: 266 },
-      { name: 'Бургер', calories: 354 },
-      { name: 'Картофель фри', calories: 312 },
-      { name: 'Орехи грецкие', calories: 654 },
-      { name: 'Миндаль', calories: 579 },
-      { name: 'Авокадо', calories: 160 },
-      { name: 'Виноград', calories: 69 },
-      { name: 'Апельсин', calories: 47 },
-      { name: 'Груша', calories: 57 },
-      { name: 'Клубника', calories: 32 }
+      { name: 'Куриное филе', calories: 165, protein: 31, fat: 3.6, carbs: 0 },
+      { name: 'Яблоко', calories: 52, protein: 0.3, fat: 0.2, carbs: 14 },
+      { name: 'Рис', calories: 130, protein: 2.4, fat: 0.5, carbs: 28 },
+      { name: 'Рис отварной', calories: 116, protein: 2.2, fat: 0.5, carbs: 25 },
+      { name: 'Банан', calories: 89, protein: 1.1, fat: 0.3, carbs: 23 },
+      { name: 'Яйцо варёное', calories: 155, protein: 13, fat: 11, carbs: 1.1 },
+      { name: 'Яйцо', calories: 155, protein: 13, fat: 11, carbs: 1.1 },
+      { name: 'Овсянка', calories: 68, protein: 2.4, fat: 1.4, carbs: 12 },
+      { name: 'Овсяная каша', calories: 88, protein: 3.2, fat: 1.8, carbs: 15 },
+      { name: 'Гречка', calories: 132, protein: 4.2, fat: 1.3, carbs: 27 },
+      { name: 'Гречка отварная', calories: 101, protein: 3.2, fat: 1, carbs: 21 },
+      { name: 'Молоко', calories: 42, protein: 3.4, fat: 1, carbs: 4.8 },
+      { name: 'Молоко 2.5%', calories: 52, protein: 2.8, fat: 2.5, carbs: 4.7 },
+      { name: 'Кефир', calories: 50, protein: 2.8, fat: 1, carbs: 4 },
+      { name: 'Творог', calories: 101, protein: 18, fat: 0.6, carbs: 3.3 },
+      { name: 'Творог 5%', calories: 121, protein: 17, fat: 5, carbs: 1.8 },
+      { name: 'Сыр', calories: 402, protein: 25, fat: 33, carbs: 1.3 },
+      { name: 'Хлеб белый', calories: 265, protein: 8.9, fat: 3.2, carbs: 51 },
+      { name: 'Хлеб чёрный', calories: 201, protein: 6.6, fat: 1.2, carbs: 40 },
+      { name: 'Картофель', calories: 77, protein: 2, fat: 0.1, carbs: 17 },
+      { name: 'Картофель жареный', calories: 192, protein: 2.5, fat: 9.5, carbs: 24 },
+      { name: 'Макароны', calories: 131, protein: 5, fat: 1.1, carbs: 25 },
+      { name: 'Макароны отварные', calories: 112, protein: 4.2, fat: 0.9, carbs: 22 },
+      { name: 'Лосось', calories: 208, protein: 20, fat: 13, carbs: 0 },
+      { name: 'Говядина', calories: 250, protein: 26, fat: 15, carbs: 0 },
+      { name: 'Свинина', calories: 242, protein: 27, fat: 14, carbs: 0 },
+      { name: 'Колбаса', calories: 301, protein: 12, fat: 28, carbs: 1 },
+      { name: 'Сосиски', calories: 277, protein: 10, fat: 26, carbs: 1.5 },
+      { name: 'Котлета', calories: 220, protein: 15, fat: 16, carbs: 6 },
+      { name: 'Салат овощной', calories: 65, protein: 2, fat: 4, carbs: 5 },
+      { name: 'Огурец', calories: 15, protein: 0.7, fat: 0.1, carbs: 3.6 },
+      { name: 'Помидор', calories: 18, protein: 0.9, fat: 0.2, carbs: 3.9 },
+      { name: 'Морковь', calories: 41, protein: 0.9, fat: 0.2, carbs: 10 },
+      { name: 'Брокколи', calories: 34, protein: 2.8, fat: 0.4, carbs: 7 },
+      { name: 'Шоколад молочный', calories: 535, protein: 8, fat: 30, carbs: 59 },
+      { name: 'Шоколад тёмный', calories: 546, protein: 5, fat: 31, carbs: 61 },
+      { name: 'Печенье', calories: 417, protein: 7.5, fat: 16, carbs: 63 },
+      { name: 'Мёд', calories: 304, protein: 0, fat: 0, carbs: 82 },
+      { name: 'Сахар', calories: 398, protein: 0, fat: 0, carbs: 100 },
+      { name: 'Йогурт', calories: 66, protein: 5, fat: 1.5, carbs: 8 },
+      { name: 'Курица варёная', calories: 170, protein: 25, fat: 7, carbs: 0 },
+      { name: 'Кофе', calories: 2, protein: 0.2, fat: 0, carbs: 0 },
+      { name: 'Чай', calories: 1, protein: 0, fat: 0, carbs: 0.3 },
+      { name: 'Сок апельсиновый', calories: 45, protein: 0.7, fat: 0.2, carbs: 10 },
+      { name: 'Вода', calories: 0, protein: 0, fat: 0, carbs: 0 },
+      { name: 'Пицца', calories: 266, protein: 11, fat: 10, carbs: 33 },
+      { name: 'Бургер', calories: 354, protein: 17, fat: 17, carbs: 31 },
+      { name: 'Картофель фри', calories: 312, protein: 3.4, fat: 15, carbs: 41 },
+      { name: 'Орехи грецкие', calories: 654, protein: 15, fat: 65, carbs: 14 },
+      { name: 'Миндаль', calories: 579, protein: 21, fat: 50, carbs: 22 },
+      { name: 'Авокадо', calories: 160, protein: 2, fat: 15, carbs: 9 },
+      { name: 'Виноград', calories: 69, protein: 0.7, fat: 0.2, carbs: 18 },
+      { name: 'Апельсин', calories: 47, protein: 0.9, fat: 0.1, carbs: 12 },
+      { name: 'Груша', calories: 57, protein: 0.4, fat: 0.1, carbs: 15 },
+      { name: 'Клубника', calories: 32, protein: 0.7, fat: 0.3, carbs: 8 }
     ];
+
+    function haptic(type, arg) {
+      if (!tg?.HapticFeedback) return;
+      if (type === 'impactOccurred') tg.HapticFeedback.impactOccurred(arg || 'light');
+      else if (type === 'selectionChanged') tg.HapticFeedback.selectionChanged();
+      else tg.HapticFeedback[type]?.(arg);
+    }
 
     function getTodayKey() {
       const now = new Date();
       return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     }
 
-    function getFoods() {
+    function getDateKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function getAllFoodsData() {
       try {
-        const data = JSON.parse(localStorage.getItem(FOOD_STORAGE_KEY) || '{}');
-        const today = getTodayKey();
-        return data[today] || [];
+        return JSON.parse(localStorage.getItem(FOOD_STORAGE_KEY) || '{}');
       } catch {
-        return [];
+        return {};
       }
     }
 
-    function saveFoods(foods) {
-      const data = JSON.parse(localStorage.getItem(FOOD_STORAGE_KEY) || '{}');
-      data[getTodayKey()] = foods;
+    function getFoods(dateKey) {
+      const data = getAllFoodsData();
+      return data[dateKey || getTodayKey()] || [];
+    }
+
+    function saveFoods(foods, dateKey) {
+      const data = getAllFoodsData();
+      data[dateKey || getTodayKey()] = foods;
       localStorage.setItem(FOOD_STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function cleanupOldData() {
+      const data = getAllFoodsData();
+      const today = getTodayKey();
+      const keepDays = 7;
+      const keys = Object.keys(data);
+      let changed = false;
+      keys.forEach(k => {
+        if (k === today) return;
+        const keyDate = new Date(k);
+        const todayDate = new Date(today);
+        const diffDays = Math.floor((todayDate - keyDate) / 86400000);
+        if (diffDays > keepDays) {
+          delete data[k];
+          changed = true;
+        }
+      });
+      if (changed) localStorage.setItem(FOOD_STORAGE_KEY, JSON.stringify(data));
     }
 
     function renderList() {
       const foods = getFoods();
       const listEl = document.getElementById('foodList');
-      const totalEl = document.getElementById('totalCalories');
       const total = foods.reduce((sum, f) => sum + f.calories, 0);
+      const bju = foods.reduce((acc, f) => ({
+        protein: (acc.protein || 0) + (Number(f.protein) || 0),
+        fat: (acc.fat || 0) + (Number(f.fat) || 0),
+        carbs: (acc.carbs || 0) + (Number(f.carbs) || 0)
+      }), { protein: 0, fat: 0, carbs: 0 });
 
-      totalEl.textContent = total;
+      updateHero(total, getGoal(), bju);
       updateProgress(total, getGoal());
 
       if (foods.length === 0) {
@@ -538,15 +729,16 @@
       listEl.innerHTML = foods.map((food, index) => `
         <li class="food-item">
           <span class="food-name">${escapeHtml(food.name)}</span>
-          <span>
+          <span class="food-item-right">
             <span class="food-calories">${food.calories} ккал</span>
-            <button type="button" class="btn-delete" data-index="${index}" aria-label="Удалить">×</button>
+            <button type="button" class="btn-delete" data-index="${index}" aria-label="Удалить">🗑</button>
           </span>
         </li>
       `).join('');
 
       listEl.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', () => {
+          haptic('impactOccurred');
           const idx = parseInt(btn.dataset.index, 10);
           const newFoods = getFoods().filter((_, i) => i !== idx);
           saveFoods(newFoods);
@@ -582,7 +774,7 @@
         return;
       }
       dropdown.innerHTML = items.map(f => `
-        <div class="autocomplete-item" data-name="${escapeHtml(f.name)}" data-cal="${f.calories}">
+        <div class="autocomplete-item" data-name="${escapeHtml(f.name)}" data-cal="${f.calories}" data-protein="${f.protein || 0}" data-fat="${f.fat || 0}" data-carbs="${f.carbs || 0}">
           <span>${escapeHtml(f.name)}</span>
           <span class="cal">${f.calories} ккал</span>
         </div>
@@ -590,11 +782,14 @@
       dropdown.style.display = 'block';
       dropdown.querySelectorAll('.autocomplete-item').forEach(el => {
         el.addEventListener('click', () => {
+          haptic('selectionChanged');
           nameInput.value = el.dataset.name;
           caloriesInput.value = el.dataset.cal;
+          nameInput.dataset.bjuProtein = el.dataset.protein;
+          nameInput.dataset.bjuFat = el.dataset.fat;
+          nameInput.dataset.bjuCarbs = el.dataset.carbs;
           dropdown.style.display = 'none';
           caloriesInput.focus();
-          if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
         });
       });
     }
@@ -616,6 +811,8 @@
     const goalInput = document.getElementById('goalInput');
     const btnEditGoal = document.getElementById('btnEditGoal');
 
+    cleanupOldData();
+
     if (!getGoal()) {
       showGoalModal();
     }
@@ -627,13 +824,50 @@
       setGoal(val);
       hideGoalModal();
       renderList();
-      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      haptic('impactOccurred');
     });
 
     btnEditGoal.addEventListener('click', () => {
+      haptic('selectionChanged');
       goalInput.value = getGoal() || 2000;
       showGoalModal();
       goalInput.focus();
+    });
+
+    document.getElementById('btnHistory').addEventListener('click', () => {
+      haptic('impactOccurred');
+      const goal = getGoal();
+      const list = document.getElementById('historyList');
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const key = getDateKey(d);
+        const foods = getFoods(key);
+        const total = foods.reduce((s, f) => s + f.calories, 0);
+        const fmt = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+        const hasGoal = goal && goal > 0;
+        days.push({ key, fmt, total, ok: hasGoal ? total <= goal : null });
+      }
+      list.innerHTML = days.map(({ fmt, total, ok }) => {
+        const status = ok === null ? '—' : (ok ? '✓' : '✗');
+        const statusClass = ok === null ? '' : (ok ? 'ok' : 'fail');
+        return `
+        <div class="history-item">
+          <span class="history-date">${fmt}</span>
+          <span>
+            <span class="history-cal">${total} ккал</span>
+            <span class="history-status ${statusClass}">${status}</span>
+          </span>
+        </div>`;
+      }).join('');
+      document.getElementById('historyModal').style.display = 'flex';
+    });
+
+    document.getElementById('historyModal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('history-modal')) {
+        document.getElementById('historyModal').style.display = 'none';
+      }
     });
 
     document.getElementById('foodForm').addEventListener('submit', (e) => {
@@ -643,18 +877,21 @@
 
       if (!name || isNaN(calories) || calories < 0) return;
 
+      const bju = getBJUFromDb(name, calories);
+
       const foods = getFoods();
-      foods.push({ name, calories });
+      foods.push({ name, calories, protein: bju.protein, fat: bju.fat, carbs: bju.carbs });
       saveFoods(foods);
       renderList();
 
       nameInput.value = '';
       caloriesInput.value = '';
+      delete nameInput.dataset.bjuProtein;
+      delete nameInput.dataset.bjuFat;
+      delete nameInput.dataset.bjuCarbs;
       nameInput.focus();
 
-      if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-      }
+      haptic('impactOccurred');
     });
 
     renderList();
