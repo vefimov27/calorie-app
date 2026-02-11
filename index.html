@@ -43,10 +43,48 @@
 
     .input-group {
       margin-bottom: 12px;
+      position: relative;
     }
 
     .input-group:last-of-type {
       margin-bottom: 16px;
+    }
+
+    .autocomplete-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 4px;
+      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .autocomplete-item {
+      padding: 12px 16px;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 8px;
+      margin: 4px;
+      color: var(--tg-theme-text-color, #ffffff);
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item.selected {
+      background: var(--tg-theme-bg-color, #18222d);
+    }
+
+    .autocomplete-item .cal {
+      font-size: 13px;
+      color: var(--tg-theme-button-color, #2aabee);
+      font-weight: 600;
     }
 
     label {
@@ -172,9 +210,10 @@
     <h1>🍽 Счётчик калорий</h1>
 
     <form class="form" id="foodForm">
-      <div class="input-group">
+      <div class="input-group" id="foodNameGroup">
         <label for="foodName">Название еды</label>
-        <input type="text" id="foodName" placeholder="Например: Овсянка" required>
+        <input type="text" id="foodName" placeholder="Начните вводить — появятся подсказки" autocomplete="off">
+        <div class="autocomplete-dropdown" id="autocompleteDropdown" style="display: none;"></div>
       </div>
       <div class="input-group">
         <label for="foodCalories">Калории</label>
@@ -204,6 +243,64 @@
     }
 
     const FOOD_STORAGE_KEY = 'calorie_app_foods';
+
+    const FOOD_DATABASE = [
+      { name: 'Куриное филе', calories: 165 },
+      { name: 'Яблоко', calories: 52 },
+      { name: 'Рис', calories: 130 },
+      { name: 'Рис отварной', calories: 116 },
+      { name: 'Банан', calories: 89 },
+      { name: 'Яйцо варёное', calories: 155 },
+      { name: 'Яйцо', calories: 155 },
+      { name: 'Овсянка', calories: 68 },
+      { name: 'Овсяная каша', calories: 88 },
+      { name: 'Гречка', calories: 132 },
+      { name: 'Гречка отварная', calories: 101 },
+      { name: 'Молоко', calories: 42 },
+      { name: 'Молоко 2.5%', calories: 52 },
+      { name: 'Кефир', calories: 50 },
+      { name: 'Творог', calories: 101 },
+      { name: 'Творог 5%', calories: 121 },
+      { name: 'Сыр', calories: 402 },
+      { name: 'Хлеб белый', calories: 265 },
+      { name: 'Хлеб чёрный', calories: 201 },
+      { name: 'Картофель', calories: 77 },
+      { name: 'Картофель жареный', calories: 192 },
+      { name: 'Макароны', calories: 131 },
+      { name: 'Макароны отварные', calories: 112 },
+      { name: 'Лосось', calories: 208 },
+      { name: 'Говядина', calories: 250 },
+      { name: 'Свинина', calories: 242 },
+      { name: 'Колбаса', calories: 301 },
+      { name: 'Сосиски', calories: 277 },
+      { name: 'Котлета', calories: 220 },
+      { name: 'Салат овощной', calories: 65 },
+      { name: 'Огурец', calories: 15 },
+      { name: 'Помидор', calories: 18 },
+      { name: 'Морковь', calories: 41 },
+      { name: 'Брокколи', calories: 34 },
+      { name: 'Шоколад молочный', calories: 535 },
+      { name: 'Шоколад тёмный', calories: 546 },
+      { name: 'Печенье', calories: 417 },
+      { name: 'Мёд', calories: 304 },
+      { name: 'Сахар', calories: 398 },
+      { name: 'Йогурт', calories: 66 },
+      { name: 'Курица варёная', calories: 170 },
+      { name: 'Кофе', calories: 2 },
+      { name: 'Чай', calories: 1 },
+      { name: 'Сок апельсиновый', calories: 45 },
+      { name: 'Вода', calories: 0 },
+      { name: 'Пицца', calories: 266 },
+      { name: 'Бургер', calories: 354 },
+      { name: 'Картофель фри', calories: 312 },
+      { name: 'Орехи грецкие', calories: 654 },
+      { name: 'Миндаль', calories: 579 },
+      { name: 'Авокадо', calories: 160 },
+      { name: 'Виноград', calories: 69 },
+      { name: 'Апельсин', calories: 47 },
+      { name: 'Груша', calories: 57 },
+      { name: 'Клубника', calories: 32 }
+    ];
 
     function getTodayKey() {
       const now = new Date();
@@ -266,10 +363,57 @@
       return div.innerHTML;
     }
 
+    // Автоподсказки
+    const nameInput = document.getElementById('foodName');
+    const caloriesInput = document.getElementById('foodCalories');
+    const dropdown = document.getElementById('autocompleteDropdown');
+    const MAX_SUGGESTIONS = 6;
+
+    function getSuggestions(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) return [];
+      return FOOD_DATABASE
+        .filter(f => f.name.toLowerCase().includes(q))
+        .slice(0, MAX_SUGGESTIONS);
+    }
+
+    function showSuggestions(query) {
+      const items = getSuggestions(query);
+      if (items.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+      }
+      dropdown.innerHTML = items.map(f => `
+        <div class="autocomplete-item" data-name="${escapeHtml(f.name)}" data-cal="${f.calories}">
+          <span>${escapeHtml(f.name)}</span>
+          <span class="cal">${f.calories} ккал</span>
+        </div>
+      `).join('');
+      dropdown.style.display = 'block';
+      dropdown.querySelectorAll('.autocomplete-item').forEach(el => {
+        el.addEventListener('click', () => {
+          nameInput.value = el.dataset.name;
+          caloriesInput.value = el.dataset.cal;
+          dropdown.style.display = 'none';
+          caloriesInput.focus();
+          if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+        });
+      });
+    }
+
+    function hideSuggestions() {
+      dropdown.style.display = 'none';
+    }
+
+    nameInput.addEventListener('input', () => showSuggestions(nameInput.value));
+    nameInput.addEventListener('focus', () => showSuggestions(nameInput.value));
+    nameInput.addEventListener('blur', () => setTimeout(hideSuggestions, 200));
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#foodNameGroup')) hideSuggestions();
+    });
+
     document.getElementById('foodForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      const nameInput = document.getElementById('foodName');
-      const caloriesInput = document.getElementById('foodCalories');
       const name = nameInput.value.trim();
       const calories = parseInt(caloriesInput.value, 10);
 
