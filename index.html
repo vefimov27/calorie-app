@@ -15,32 +15,40 @@
     }
 
     body[data-theme="light"] {
-      --tg-theme-bg-color: #ffffff;
+      --tg-theme-bg-color: #f8f8fa;
       --tg-theme-text-color: #000000;
-      --tg-theme-secondary-bg-color: #f2f2f7;
+      --tg-theme-secondary-bg-color: rgba(255, 255, 255, 0.5);
       --tg-theme-hint-color: #8e8e93;
       --tg-theme-button-color: #007aff;
       --tg-theme-button-text-color: #ffffff;
       --tg-theme-destructive-text-color: #ff3b30;
+      --app-bg-gradient: linear-gradient(165deg, #f5f5f7 0%, #e8e8ed 50%, #e0e0e6 100%);
+      --app-pattern: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.04) 1px, transparent 0);
     }
 
     body[data-theme="dark"] {
-      --tg-theme-bg-color: #0c0c0e;
+      --tg-theme-bg-color: #060608;
       --tg-theme-text-color: #ffffff;
-      --tg-theme-secondary-bg-color: #1c1c1e;
+      --tg-theme-secondary-bg-color: rgba(28, 28, 32, 0.4);
       --tg-theme-hint-color: #8e8e93;
       --tg-theme-button-color: #0a84ff;
       --tg-theme-button-text-color: #ffffff;
       --tg-theme-destructive-text-color: #ff453a;
+      --app-bg-gradient: linear-gradient(165deg, #0d0e14 0%, #08090e 40%, #050508 100%);
+      --app-pattern: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--tg-theme-bg-color, #18222d);
+      background-image: var(--app-pattern, radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)), var(--app-bg-gradient, linear-gradient(165deg, #0d0e14 0%, #08090e 50%, #050508 100%));
+      background-size: 28px 28px, 100% 100%;
+      background-position: 0 0, 0 0;
+      background-repeat: repeat, no-repeat;
       color: var(--tg-theme-text-color, #ffffff);
       min-height: 100vh;
       padding: 16px;
       padding-bottom: calc(16px + env(safe-area-inset-bottom));
+      transition: background-color 0.4s ease, background-image 0.4s ease;
     }
 
     .container {
@@ -70,11 +78,19 @@
     }
 
     .form {
-      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      background: var(--tg-theme-secondary-bg-color);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-radius: 16px;
       padding: 16px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    body[data-theme="light"] .form {
+      border-color: rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
     }
 
     .input-group {
@@ -92,12 +108,19 @@
       left: 0;
       right: 0;
       margin-top: 4px;
-      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      background: var(--tg-theme-secondary-bg-color);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
       max-height: 200px;
       overflow-y: auto;
       z-index: 100;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    body[data-theme="light"] .autocomplete-dropdown {
+      border-color: rgba(0, 0, 0, 0.06);
     }
 
     .autocomplete-item {
@@ -221,13 +244,20 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      background: var(--tg-theme-secondary-bg-color);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border-radius: 16px;
       padding: 10px 14px;
       margin-bottom: 6px;
       font-size: 14px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.04);
       animation: foodItemFadeIn 0.35s ease-out forwards;
+    }
+
+    body[data-theme="light"] .food-item {
+      border-color: rgba(0, 0, 0, 0.04);
     }
 
     @keyframes foodItemFadeIn {
@@ -450,7 +480,9 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      background: var(--tg-theme-secondary-bg-color);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-radius: 20px 20px 0 0;
       max-height: 75vh;
       z-index: 1001;
@@ -458,7 +490,12 @@
       transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
       padding: 20px;
       padding-bottom: calc(20px + env(safe-area-inset-bottom));
-      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.25);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    body[data-theme="light"] .drawer {
+      border-top-color: rgba(0, 0, 0, 0.08);
     }
 
     .drawer-overlay.open .drawer {
@@ -545,8 +582,14 @@
     }
 
     .confirm-buttons .btn-cancel {
-      background: var(--tg-theme-bg-color, #18222d);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       color: var(--tg-theme-text-color, #ffffff);
+    }
+
+    body[data-theme="light"] .confirm-buttons .btn-cancel {
+      background: rgba(0, 0, 0, 0.06);
     }
 
     .confirm-buttons .btn-confirm {
@@ -577,13 +620,21 @@
     }
 
     .modal {
-      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      background: var(--tg-theme-secondary-bg-color);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-radius: 16px;
       padding: 24px;
       width: 100%;
       max-width: 340px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       animation: slideUp 0.3s ease;
+    }
+
+    body[data-theme="light"] .modal {
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
     }
 
     @keyframes slideUp {
@@ -622,11 +673,19 @@
 
     /* Прогресс-бар */
     .progress-section {
-      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      background: var(--tg-theme-secondary-bg-color);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-radius: 16px;
       padding: 14px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    body[data-theme="light"] .progress-section {
+      border-color: rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
     }
 
     .progress-header {
