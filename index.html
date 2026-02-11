@@ -239,7 +239,8 @@
       background: rgba(255, 107, 107, 0.15);
     }
 
-    .btn-history {
+    .btn-history,
+    .btn-today-list {
       width: 100%;
       padding: 12px;
       font-size: 14px;
@@ -249,14 +250,20 @@
       background: transparent;
       color: var(--tg-theme-button-color, #2aabee);
       cursor: pointer;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       transition: opacity 0.2s;
     }
 
     .btn-history:hover,
-    .btn-history:active {
+    .btn-history:active,
+    .btn-today-list:hover,
+    .btn-today-list:active {
       opacity: 0.9;
       background: rgba(42, 171, 238, 0.1);
+    }
+
+    .btn-today-list {
+      margin-bottom: 20px;
     }
 
     .history-modal .modal {
@@ -306,6 +313,71 @@
 
     .history-status.fail {
       color: var(--tg-theme-destructive-text-color, #ff6b6b);
+    }
+
+    /* Drawer списка за сегодня */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      border-radius: 20px 20px 0 0;
+      max-height: 75vh;
+      z-index: 1001;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+      padding: 20px;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .drawer-overlay.open .drawer {
+      transform: translateY(0);
+    }
+
+    .drawer-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--tg-theme-hint-color, #8e8e93);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+      opacity: 0.5;
+    }
+
+    .drawer-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--tg-theme-text-color, #ffffff);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .drawer-list {
+      overflow-y: auto;
+      max-height: calc(75vh - 80px);
+    }
+
+    .drawer-empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--tg-theme-hint-color, #8e8e93);
+      font-size: 15px;
     }
 
     /* Модалка цели */
@@ -462,6 +534,15 @@
     </div>
   </div>
 
+  <!-- Drawer списка за сегодня -->
+  <div class="drawer-overlay" id="todayListOverlay">
+    <div class="drawer">
+      <div class="drawer-handle"></div>
+      <div class="drawer-title">Мой список за сегодня</div>
+      <div class="drawer-list" id="todayListContent"></div>
+    </div>
+  </div>
+
   <div class="container">
     <h1>🍽 Счётчик калорий</h1>
 
@@ -504,11 +585,7 @@
     </form>
 
     <button type="button" class="btn-history" id="btnHistory">История за 7 дней</button>
-
-    <div class="list-title">Ваш список</div>
-    <ul class="food-list" id="foodList">
-      <li class="empty-state" id="emptyState">Пока ничего не добавлено</li>
-    </ul>
+    <button type="button" class="btn-today-list" id="btnTodayList">Мой список за сегодня</button>
   </div>
 
   <script>
@@ -710,7 +787,6 @@
 
     function renderList() {
       const foods = getFoods();
-      const listEl = document.getElementById('foodList');
       const total = foods.reduce((sum, f) => sum + f.calories, 0);
       const bju = foods.reduce((acc, f) => ({
         protein: (acc.protein || 0) + (Number(f.protein) || 0),
@@ -721,22 +797,23 @@
       updateHero(total, getGoal(), bju);
       updateProgress(total, getGoal());
 
+      const drawerList = document.getElementById('todayListContent');
       if (foods.length === 0) {
-        listEl.innerHTML = '<li class="empty-state" id="emptyState">Пока ничего не добавлено</li>';
+        drawerList.innerHTML = '<div class="drawer-empty">Вы ещё ничего не добавили сегодня</div>';
         return;
       }
 
-      listEl.innerHTML = foods.map((food, index) => `
-        <li class="food-item">
+      drawerList.innerHTML = foods.map((food, index) => `
+        <div class="food-item">
           <span class="food-name">${escapeHtml(food.name)}</span>
           <span class="food-item-right">
             <span class="food-calories">${food.calories} ккал</span>
             <button type="button" class="btn-delete" data-index="${index}" aria-label="Удалить">🗑</button>
           </span>
-        </li>
+        </div>
       `).join('');
 
-      listEl.querySelectorAll('.btn-delete').forEach(btn => {
+      drawerList.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', () => {
           haptic('impactOccurred');
           const idx = parseInt(btn.dataset.index, 10);
@@ -832,6 +909,17 @@
       goalInput.value = getGoal() || 2000;
       showGoalModal();
       goalInput.focus();
+    });
+
+    document.getElementById('btnTodayList').addEventListener('click', () => {
+      haptic('impactOccurred');
+      document.getElementById('todayListOverlay').classList.add('open');
+    });
+
+    document.getElementById('todayListOverlay').addEventListener('click', (e) => {
+      if (e.target.id === 'todayListOverlay') {
+        document.getElementById('todayListOverlay').classList.remove('open');
+      }
     });
 
     document.getElementById('btnHistory').addEventListener('click', () => {
