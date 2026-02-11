@@ -11,6 +11,27 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    body[data-theme="light"] {
+      --tg-theme-bg-color: #ffffff;
+      --tg-theme-text-color: #000000;
+      --tg-theme-secondary-bg-color: #f2f2f7;
+      --tg-theme-hint-color: #8e8e93;
+      --tg-theme-button-color: #007aff;
+      --tg-theme-button-text-color: #ffffff;
+      --tg-theme-destructive-text-color: #ff3b30;
+    }
+
+    body[data-theme="dark"] {
+      --tg-theme-bg-color: #0c0c0e;
+      --tg-theme-text-color: #ffffff;
+      --tg-theme-secondary-bg-color: #1c1c1e;
+      --tg-theme-hint-color: #8e8e93;
+      --tg-theme-button-color: #0a84ff;
+      --tg-theme-button-text-color: #ffffff;
+      --tg-theme-destructive-text-color: #ff453a;
     }
 
     body {
@@ -27,12 +48,25 @@
       margin: 0 auto;
     }
 
-    h1 {
-      font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 24px;
+    .hero-header {
       text-align: center;
+      margin-bottom: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .hero-greeting {
+      font-size: 26px;
+      font-weight: 700;
       color: var(--tg-theme-text-color, #ffffff);
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-subtitle {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--tg-theme-hint-color, #8e8e93);
+      letter-spacing: 0.2px;
     }
 
     .form {
@@ -134,21 +168,22 @@
 
     .hero-block {
       text-align: center;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
     }
 
     .hero-calories {
-      font-size: 48px;
+      font-size: 52px;
       font-weight: 800;
       color: var(--tg-theme-text-color, #ffffff);
       line-height: 1.1;
-      letter-spacing: -1px;
+      letter-spacing: -1.5px;
     }
 
     .hero-remaining {
       font-size: 13px;
       color: var(--tg-theme-hint-color, #8e8e93);
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     .bju-row {
@@ -304,6 +339,47 @@
       background: rgba(142, 142, 147, 0.08);
     }
 
+    .footer-theme {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 8px;
+      margin-bottom: 20px;
+      padding: 8px 0;
+    }
+
+    .btn-theme {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      opacity: 0.5;
+      filter: grayscale(1);
+      transition: opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    .btn-theme:hover,
+    .btn-theme:active {
+      opacity: 0.8;
+    }
+
+    .btn-theme.active {
+      opacity: 1;
+      filter: grayscale(0);
+    }
+
+    .btn-theme.active::after {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 4px;
+      background: var(--tg-theme-button-color, #2aabee);
+      border-radius: 50%;
+      margin: 2px auto 0;
+    }
+
     .history-modal .modal {
       max-height: 80vh;
       overflow: hidden;
@@ -441,6 +517,10 @@
     .btn-clear-list:active {
       opacity: 0.9;
       background: rgba(255, 107, 107, 0.1);
+    }
+
+    .confirm-modal {
+      z-index: 1100;
     }
 
     .confirm-modal .modal {
@@ -635,9 +715,11 @@
   </div>
 
   <div class="container">
-    <h1>🍽 Счётчик калорий</h1>
-
-    <!-- Главный показатель -->
+    <!-- Приветствие и главный показатель -->
+    <div class="hero-header">
+      <div class="hero-greeting" id="heroGreeting">Добрый день!</div>
+      <div class="hero-subtitle" id="heroSubtitle">Сегодня вы употребили:</div>
+    </div>
     <div class="hero-block">
       <div class="hero-calories" id="heroCalories">0</div>
       <div class="hero-remaining" id="heroRemaining">осталось: — ккал</div>
@@ -675,6 +757,10 @@
     <button type="button" class="btn-history" id="btnHistory">История за 7 дней</button>
     <button type="button" class="btn-today-list" id="btnTodayList">Мой список за сегодня</button>
     <button type="button" class="btn-settings-goal" id="btnSettingsGoal" aria-label="Настроить цель">⚙ Настроить цель</button>
+    <div class="footer-theme">
+      <button type="button" class="btn-theme" id="btnThemeLight" aria-label="Светлая тема">☀️</button>
+      <button type="button" class="btn-theme active" id="btnThemeDark" aria-label="Тёмная тема">🌙</button>
+    </div>
   </div>
 
   <script>
@@ -683,8 +769,37 @@
     if (tg) {
       tg.ready();
       tg.expand();
-      document.body.style.background = tg.themeParams?.bg_color || document.body.style.background;
     }
+
+    const THEME_STORAGE_KEY = 'calorie_app_theme';
+
+    function getStoredTheme() {
+      return localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
+    }
+
+    function setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      document.getElementById('btnThemeLight').classList.toggle('active', theme === 'light');
+      document.getElementById('btnThemeDark').classList.toggle('active', theme === 'dark');
+    }
+
+    setTheme(getStoredTheme());
+
+    function getGreeting() {
+      const h = new Date().getHours();
+      if (h >= 5 && h < 12) return { text: 'Доброе утро!', emoji: '☀️' };
+      if (h >= 12 && h < 17) return { text: 'Добрый день!', emoji: '🌤' };
+      if (h >= 17 && h < 22) return { text: 'Добрый вечер!', emoji: '🌆' };
+      return { text: 'Доброй ночи!', emoji: '🌙' };
+    }
+
+    function updateGreeting() {
+      const g = getGreeting();
+      document.getElementById('heroGreeting').textContent = g.emoji + ' ' + g.text;
+    }
+
+    updateGreeting();
 
     const FOOD_STORAGE_KEY = 'calorie_app_foods';
     const GOAL_STORAGE_KEY = 'calorie_app_goal';
@@ -1019,6 +1134,16 @@
       goalInput.focus();
     });
 
+    document.getElementById('btnThemeLight').addEventListener('click', () => {
+      haptic('selectionChanged');
+      setTheme('light');
+    });
+
+    document.getElementById('btnThemeDark').addEventListener('click', () => {
+      haptic('selectionChanged');
+      setTheme('dark');
+    });
+
     document.getElementById('btnTodayList').addEventListener('click', () => {
       haptic('impactOccurred');
       document.getElementById('todayListOverlay').classList.add('open');
@@ -1036,7 +1161,10 @@
 
     document.getElementById('btnClearList').addEventListener('click', () => {
       haptic('impactOccurred');
-      confirmClearModal.style.display = 'flex';
+      document.getElementById('todayListOverlay').classList.remove('open');
+      setTimeout(() => {
+        confirmClearModal.style.display = 'flex';
+      }, 350);
     });
 
     confirmClearCancel.addEventListener('click', () => {
@@ -1049,7 +1177,6 @@
       saveFoods([]);
       renderList();
       confirmClearModal.style.display = 'none';
-      document.getElementById('todayListOverlay').classList.remove('open');
     });
 
     confirmClearModal.addEventListener('click', (e) => {
