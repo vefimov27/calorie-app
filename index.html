@@ -977,7 +977,7 @@
       delete nameInput.dataset.bjuProtein;
       delete nameInput.dataset.bjuFat;
       delete nameInput.dataset.bjuCarbs;
-      nameInput.focus();
+      document.activeElement.blur();
 
       haptic('impactOccurred');
     });
