@@ -601,6 +601,122 @@
       opacity: 0.8;
     }
 
+    /* Мини-игра Flappy */
+    .game-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1200;
+      background: var(--tg-theme-bg-color, #0a0a0e);
+      display: none;
+      flex-direction: column;
+    }
+
+    .game-modal.open {
+      display: flex;
+    }
+
+    .game-canvas-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .game-canvas {
+      width: 100%;
+      height: 100%;
+      max-width: 420px;
+      max-height: 100vh;
+      touch-action: none;
+    }
+
+    .game-score {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--tg-theme-text-color, #fff);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .game-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .game-overlay.show {
+      display: flex;
+    }
+
+    .game-over-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--tg-theme-text-color, #fff);
+      margin-bottom: 8px;
+    }
+
+    .game-over-score {
+      font-size: 18px;
+      color: var(--tg-theme-hint-color, #8e8e93);
+      margin-bottom: 24px;
+    }
+
+    .game-over-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .game-btn {
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .game-btn:active {
+      opacity: 0.8;
+    }
+
+    .game-btn-retry {
+      background: var(--tg-theme-button-color, #0a84ff);
+      color: var(--tg-theme-button-text-color, #fff);
+    }
+
+    .game-btn-exit {
+      background: var(--tg-theme-secondary-bg-color);
+      color: var(--tg-theme-text-color);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-game {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 8px;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .btn-game:hover,
+    .btn-game:active {
+      opacity: 1;
+    }
+
     /* Модалка цели */
     .modal-overlay {
       position: fixed;
@@ -761,6 +877,22 @@
     </div>
   </div>
 
+  <!-- Мини-игра -->
+  <div class="game-modal" id="gameModal">
+    <div class="game-canvas-wrap" style="position: relative;">
+      <canvas class="game-canvas" id="gameCanvas"></canvas>
+      <div class="game-score" id="gameScore">0</div>
+      <div class="game-overlay" id="gameOverlay">
+        <div class="game-over-title">Игра окончена!</div>
+        <div class="game-over-score" id="gameOverScore">Очки: 0</div>
+        <div class="game-over-buttons">
+          <button type="button" class="game-btn game-btn-retry" id="gameRetryBtn">Попробовать снова</button>
+          <button type="button" class="game-btn game-btn-exit" id="gameExitBtn">Выйти</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Drawer списка за сегодня -->
   <div class="drawer-overlay" id="todayListOverlay">
     <div class="drawer">
@@ -817,6 +949,7 @@
     <button type="button" class="btn-today-list" id="btnTodayList">Мой список за сегодня</button>
     <button type="button" class="btn-settings-goal" id="btnSettingsGoal" aria-label="Настроить цель">⚙ Настроить цель</button>
     <div class="footer-theme">
+      <button type="button" class="btn-game" id="btnGame" aria-label="Мини-игра">🎮</button>
       <button type="button" class="btn-theme" id="btnThemeLight" aria-label="Светлая тема">☀️</button>
       <button type="button" class="btn-theme active" id="btnThemeDark" aria-label="Тёмная тема">🌙</button>
     </div>
@@ -1305,6 +1438,200 @@
     });
 
     renderList();
+
+    // Мини-игра Flappy Bird
+    (function() {
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const gameModal = document.getElementById('gameModal');
+      const gameScoreEl = document.getElementById('gameScore');
+      const gameOverlay = document.getElementById('gameOverlay');
+      const gameOverScoreEl = document.getElementById('gameOverScore');
+      const gameRetryBtn = document.getElementById('gameRetryBtn');
+      const gameExitBtn = document.getElementById('gameExitBtn');
+
+      const APPLE = '🍏';
+      const BURGER = '🍔';
+      const GRAVITY = 0.4;
+      const JUMP = -7;
+      const PIPE_WIDTH = 60;
+      const PIPE_GAP = 120;
+      const PIPE_SPEED = 3;
+      const PIPE_SPAWN_INTERVAL = 1800;
+
+      let gameState = 'idle';
+      let playerY, playerVy;
+      let pipes = [];
+      let score = 0;
+      let lastPipeTime = 0;
+      let canvasW, canvasH;
+      let animId;
+
+      function resizeCanvas() {
+        const wrap = canvas.parentElement;
+        canvas.width = wrap.clientWidth;
+        canvas.height = wrap.clientHeight;
+        canvasW = canvas.width;
+        canvasH = canvas.height;
+      }
+
+      function drawEmoji(emoji, x, y, size) {
+        ctx.font = size + 'px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(emoji, x, y);
+      }
+
+      function resetGame() {
+        playerY = canvasH / 2;
+        playerVy = 0;
+        pipes = [];
+        score = 0;
+        lastPipeTime = 0;
+        gameState = 'playing';
+        gameOverlay.classList.remove('show');
+        gameScoreEl.textContent = '0';
+      }
+
+      function spawnPipe() {
+        const gapY = 100 + Math.random() * (canvasH - 200 - PIPE_GAP);
+        pipes.push({
+          x: canvasW,
+          topH: gapY,
+          bottomY: gapY + PIPE_GAP,
+          passed: false
+        });
+      }
+
+      function hitTest() {
+        const playerSize = 28;
+        const playerLeft = canvasW / 2 - playerSize / 2;
+        const playerRight = canvasW / 2 + playerSize / 2;
+        const playerTop = playerY - playerSize / 2;
+        const playerBottom = playerY + playerSize / 2;
+
+        if (playerTop < 0 || playerBottom > canvasH) return true;
+
+        for (const p of pipes) {
+          if (playerRight < p.x + 10 || playerLeft > p.x + PIPE_WIDTH - 10) continue;
+          const inGap = playerBottom > p.topH + 15 && playerTop < p.bottomY - 15;
+          if (!inGap) return true;
+        }
+        return false;
+      }
+
+      function draw() {
+        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--tg-theme-bg-color').trim() || '#0a0a0e';
+        ctx.fillRect(0, 0, canvasW, canvasH);
+
+        if (gameState === 'playing') {
+          playerVy += GRAVITY;
+          playerY += playerVy;
+
+          const now = Date.now();
+          if (now - lastPipeTime > PIPE_SPAWN_INTERVAL) {
+            spawnPipe();
+            lastPipeTime = now;
+          }
+
+          for (let i = pipes.length - 1; i >= 0; i--) {
+            const p = pipes[i];
+            p.x -= PIPE_SPEED;
+
+            const burgerSize = 36;
+            drawEmoji(BURGER, p.x + PIPE_WIDTH / 2, p.topH / 2, burgerSize);
+            drawEmoji(BURGER, p.x + PIPE_WIDTH / 2, p.bottomY + (canvasH - p.bottomY) / 2, burgerSize);
+
+            if (p.x + PIPE_WIDTH < canvasW / 2 && !p.passed) {
+              p.passed = true;
+              score++;
+              gameScoreEl.textContent = score;
+              if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            }
+            if (p.x + PIPE_WIDTH < 0) pipes.splice(i, 1);
+          }
+
+          drawEmoji(APPLE, canvasW / 2, playerY, 40);
+
+          if (hitTest()) {
+            gameState = 'over';
+            if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            gameOverScoreEl.textContent = 'Очки: ' + score;
+            gameOverlay.classList.add('show');
+            return;
+          }
+        } else if (gameState === 'idle') {
+          drawEmoji(APPLE, canvasW / 2, canvasH / 2, 48);
+          ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--tg-theme-hint-color').trim() || '#8e8e93';
+          ctx.font = '16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('Нажмите, чтобы начать', canvasW / 2, canvasH / 2 + 50);
+        }
+
+        animId = requestAnimationFrame(draw);
+      }
+
+      function startGame() {
+        resizeCanvas();
+        gameState = 'playing';
+        playerY = canvasH / 2;
+        playerVy = 0;
+        pipes = [];
+        score = 0;
+        lastPipeTime = Date.now();
+        gameOverlay.classList.remove('show');
+        gameScoreEl.textContent = '0';
+      }
+
+      function jump() {
+        if (gameState === 'idle') startGame();
+        else if (gameState === 'playing') playerVy = JUMP;
+      }
+
+      function closeGame() {
+        gameState = 'idle';
+        if (animId) cancelAnimationFrame(animId);
+        gameModal.classList.remove('open');
+      }
+
+      document.getElementById('btnGame').addEventListener('click', () => {
+        haptic('impactOccurred');
+        gameModal.classList.add('open');
+        requestAnimationFrame(() => {
+          resizeCanvas();
+          gameState = 'idle';
+          gameOverlay.classList.remove('show');
+          if (animId) cancelAnimationFrame(animId);
+          draw();
+        });
+      });
+
+      canvas.addEventListener('click', (e) => {
+        e.preventDefault();
+        jump();
+      });
+
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        jump();
+      }, { passive: false });
+
+      gameRetryBtn.addEventListener('click', () => {
+        haptic('impactOccurred');
+        if (animId) cancelAnimationFrame(animId);
+        resetGame();
+        draw();
+      });
+
+      gameExitBtn.addEventListener('click', () => {
+        haptic('selectionChanged');
+        closeGame();
+      });
+
+      window.addEventListener('resize', () => {
+        if (gameModal.classList.contains('open')) resizeCanvas();
+      });
+    })();
   </script>
 </body>
 </html>
