@@ -717,6 +717,91 @@
       opacity: 1;
     }
 
+    /* Магазин */
+    .shop-modal {
+      z-index: 1150;
+    }
+
+    .shop-modal .modal {
+      max-width: 360px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .shop-item {
+      background: var(--tg-theme-secondary-bg-color);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    body[data-theme="light"] .shop-item {
+      border-color: rgba(0,0,0,0.06);
+    }
+
+    .shop-item-icon {
+      font-size: 36px;
+      width: 50px;
+      text-align: center;
+    }
+
+    .shop-item-info {
+      flex: 1;
+    }
+
+    .shop-item-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--tg-theme-text-color);
+      margin-bottom: 2px;
+    }
+
+    .shop-item-price {
+      font-size: 13px;
+      color: var(--tg-theme-button-color);
+      font-weight: 600;
+    }
+
+    .shop-item-btn {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      background: var(--tg-theme-button-color);
+      color: var(--tg-theme-button-text-color);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .shop-item-btn:active {
+      opacity: 0.9;
+    }
+
+    .game-modal.skin-bg-blue {
+      background: linear-gradient(165deg, #1a237e 0%, #0d47a1 50%, #01579b 100%) !important;
+    }
+
+    .game-modal.skin-speed canvas {
+      animation: speedPulse 0.5s ease-in-out infinite alternate;
+    }
+
+    .game-modal.skin-cap .game-score::before {
+      content: '🧢 ';
+      opacity: 0.8;
+    }
+
+    @keyframes speedPulse {
+      from { opacity: 1; }
+      to { opacity: 0.92; }
+    }
+
     /* Модалка цели */
     .modal-overlay {
       position: fixed;
@@ -877,6 +962,40 @@
     </div>
   </div>
 
+  <!-- Магазин -->
+  <div class="modal-overlay shop-modal" id="shopModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-title">🛒 Магазин</div>
+      <div class="modal-subtitle">Бесплатные предметы для игры</div>
+      <div id="shopItems">
+        <div class="shop-item" data-item="bg-blue">
+          <div class="shop-item-icon">🟦</div>
+          <div class="shop-item-info">
+            <div class="shop-item-name">Синий фон</div>
+            <div class="shop-item-price">БЕСПЛАТНО</div>
+          </div>
+          <button type="button" class="shop-item-btn" data-apply="bg-blue">Надеть</button>
+        </div>
+        <div class="shop-item" data-item="speed">
+          <div class="shop-item-icon">👟</div>
+          <div class="shop-item-info">
+            <div class="shop-item-name">Скоростные кроссовки</div>
+            <div class="shop-item-price">БЕСПЛАТНО</div>
+          </div>
+          <button type="button" class="shop-item-btn" data-apply="speed">Применить</button>
+        </div>
+        <div class="shop-item" data-item="cap">
+          <div class="shop-item-icon">🧢</div>
+          <div class="shop-item-info">
+            <div class="shop-item-name">Кепка</div>
+            <div class="shop-item-price">БЕСПЛАТНО</div>
+          </div>
+          <button type="button" class="shop-item-btn" data-apply="cap">Надеть</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Мини-игра -->
   <div class="game-modal" id="gameModal">
     <div class="game-canvas-wrap" style="position: relative;">
@@ -950,6 +1069,7 @@
     <button type="button" class="btn-settings-goal" id="btnSettingsGoal" aria-label="Настроить цель">⚙ Настроить цель</button>
     <div class="footer-theme">
       <button type="button" class="btn-game" id="btnGame" aria-label="Мини-игра">🎮</button>
+      <button type="button" class="btn-game" id="btnShop" aria-label="Магазин">🛒</button>
       <button type="button" class="btn-theme" id="btnThemeLight" aria-label="Светлая тема">☀️</button>
       <button type="button" class="btn-theme active" id="btnThemeDark" aria-label="Тёмная тема">🌙</button>
     </div>
@@ -1336,6 +1456,64 @@
       setTheme('dark');
     });
 
+    const SHOP_SKIN_KEY = 'calorie_app_game_skin';
+
+    function getGameSkin() {
+      try {
+        return JSON.parse(localStorage.getItem(SHOP_SKIN_KEY) || '{}');
+      } catch { return {}; }
+    }
+
+    function setGameSkin(skin) {
+      localStorage.setItem(SHOP_SKIN_KEY, JSON.stringify(skin));
+      applyGameSkin(skin);
+    }
+
+    function applyGameSkin(skin) {
+      const modal = document.getElementById('gameModal');
+      modal.classList.remove('skin-bg-blue', 'skin-speed', 'skin-cap');
+      if (skin.bgBlue) modal.classList.add('skin-bg-blue');
+      if (skin.speed) modal.classList.add('skin-speed');
+      if (skin.cap) modal.classList.add('skin-cap');
+      if (typeof window.updateGameSkin === 'function') window.updateGameSkin(skin);
+    }
+
+    document.getElementById('btnShop').addEventListener('click', () => {
+      haptic('impactOccurred');
+      const skin = getGameSkin();
+      document.querySelector('[data-apply="bg-blue"]').textContent = skin.bgBlue ? 'Снять' : 'Надеть';
+      document.querySelector('[data-apply="speed"]').textContent = skin.speed ? 'Отменить' : 'Применить';
+      document.querySelector('[data-apply="cap"]').textContent = skin.cap ? 'Снять' : 'Надеть';
+      document.getElementById('shopModal').style.display = 'flex';
+    });
+
+    document.getElementById('shopModal').addEventListener('click', (e) => {
+      if (e.target.id === 'shopModal') {
+        document.getElementById('shopModal').style.display = 'none';
+      }
+    });
+
+    document.querySelectorAll('.shop-item-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        haptic('impactOccurred');
+        const skin = getGameSkin();
+        const key = btn.dataset.apply;
+        if (key === 'bg-blue') {
+          skin.bgBlue = !skin.bgBlue;
+          btn.textContent = skin.bgBlue ? 'Снять' : 'Надеть';
+        } else if (key === 'speed') {
+          skin.speed = !skin.speed;
+          btn.textContent = skin.speed ? 'Отменить' : 'Применить';
+        } else if (key === 'cap') {
+          skin.cap = !skin.cap;
+          btn.textContent = skin.cap ? 'Снять' : 'Надеть';
+        }
+        setGameSkin(skin);
+      });
+    });
+
+    applyGameSkin(getGameSkin());
+
     document.getElementById('btnTodayList').addEventListener('click', () => {
       haptic('impactOccurred');
       document.getElementById('todayListOverlay').classList.add('open');
@@ -1495,53 +1673,42 @@
 
       function spawnPipe() {
         const gapY = 100 + Math.random() * (canvasH - 200 - PIPE_GAP);
-        pipes.push({
-          x: canvasW,
-          topH: gapY,
-          bottomY: gapY + PIPE_GAP,
-          passed: false
-        });
+        pipes.push({ x: canvasW, topH: gapY, bottomY: gapY + PIPE_GAP, passed: false });
       }
 
       function hitTest() {
-        const playerSize = 28;
+        const playerSize = 24;
+        const pipeInset = 16;
+        const gapMargin = 18;
         const playerLeft = canvasW / 2 - playerSize / 2;
         const playerRight = canvasW / 2 + playerSize / 2;
         const playerTop = playerY - playerSize / 2;
         const playerBottom = playerY + playerSize / 2;
-
         if (playerTop < 0 || playerBottom > canvasH) return true;
-
         for (const p of pipes) {
-          if (playerRight < p.x + 10 || playerLeft > p.x + PIPE_WIDTH - 10) continue;
-          const inGap = playerBottom > p.topH + 15 && playerTop < p.bottomY - 15;
+          if (playerRight < p.x + pipeInset || playerLeft > p.x + PIPE_WIDTH - pipeInset) continue;
+          const inGap = playerBottom > p.topH - gapMargin && playerTop < p.bottomY + gapMargin;
           if (!inGap) return true;
         }
         return false;
       }
 
       function draw() {
-        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--tg-theme-bg-color').trim() || '#0a0a0e';
+        const skin = typeof getGameSkin === 'function' ? getGameSkin() : {};
+        const bg = skin.bgBlue ? '#1a237e' : (getComputedStyle(document.body).getPropertyValue('--tg-theme-bg-color').trim() || '#0a0a0e');
+        ctx.fillStyle = bg;
         ctx.fillRect(0, 0, canvasW, canvasH);
 
         if (gameState === 'playing') {
           playerVy += GRAVITY;
           playerY += playerVy;
-
-          const now = Date.now();
-          if (now - lastPipeTime > PIPE_SPAWN_INTERVAL) {
-            spawnPipe();
-            lastPipeTime = now;
-          }
+          if (Date.now() - lastPipeTime > PIPE_SPAWN_INTERVAL) { spawnPipe(); lastPipeTime = Date.now(); }
 
           for (let i = pipes.length - 1; i >= 0; i--) {
             const p = pipes[i];
             p.x -= PIPE_SPEED;
-
-            const burgerSize = 36;
-            drawEmoji(BURGER, p.x + PIPE_WIDTH / 2, p.topH / 2, burgerSize);
-            drawEmoji(BURGER, p.x + PIPE_WIDTH / 2, p.bottomY + (canvasH - p.bottomY) / 2, burgerSize);
-
+            drawEmoji(BURGER, p.x + PIPE_WIDTH / 2, p.topH / 2, 36);
+            drawEmoji(BURGER, p.x + PIPE_WIDTH / 2, p.bottomY + (canvasH - p.bottomY) / 2, 36);
             if (p.x + PIPE_WIDTH < canvasW / 2 && !p.passed) {
               p.passed = true;
               score++;
@@ -1551,7 +1718,8 @@
             if (p.x + PIPE_WIDTH < 0) pipes.splice(i, 1);
           }
 
-          drawEmoji(APPLE, canvasW / 2, playerY, 40);
+          const char = skin.cap ? '🧢' : APPLE;
+          drawEmoji(char, canvasW / 2, playerY, 40);
 
           if (hitTest()) {
             gameState = 'over';
@@ -1561,60 +1729,29 @@
             return;
           }
         } else if (gameState === 'idle') {
-          drawEmoji(APPLE, canvasW / 2, canvasH / 2, 48);
+          const char = skin.cap ? '🧢' : APPLE;
+          drawEmoji(char, canvasW / 2, canvasH / 2, 48);
           ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--tg-theme-hint-color').trim() || '#8e8e93';
           ctx.font = '16px sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText('Нажмите, чтобы начать', canvasW / 2, canvasH / 2 + 50);
         }
-
         animId = requestAnimationFrame(draw);
       }
 
-      function startGame() {
-        resizeCanvas();
-        gameState = 'playing';
-        playerY = canvasH / 2;
-        playerVy = 0;
-        pipes = [];
-        score = 0;
-        lastPipeTime = Date.now();
-        gameOverlay.classList.remove('show');
-        gameScoreEl.textContent = '0';
-      }
-
       function jump() {
-        if (gameState === 'idle') startGame();
+        if (gameState === 'idle') { resizeCanvas(); gameState = 'playing'; playerY = canvasH / 2; playerVy = 0; pipes = []; score = 0; lastPipeTime = Date.now(); gameOverlay.classList.remove('show'); gameScoreEl.textContent = '0'; }
         else if (gameState === 'playing') playerVy = JUMP;
-      }
-
-      function closeGame() {
-        gameState = 'idle';
-        if (animId) cancelAnimationFrame(animId);
-        gameModal.classList.remove('open');
       }
 
       document.getElementById('btnGame').addEventListener('click', () => {
         haptic('impactOccurred');
         gameModal.classList.add('open');
-        requestAnimationFrame(() => {
-          resizeCanvas();
-          gameState = 'idle';
-          gameOverlay.classList.remove('show');
-          if (animId) cancelAnimationFrame(animId);
-          draw();
-        });
+        requestAnimationFrame(() => { resizeCanvas(); gameState = 'idle'; gameOverlay.classList.remove('show'); if (animId) cancelAnimationFrame(animId); draw(); });
       });
 
-      canvas.addEventListener('click', (e) => {
-        e.preventDefault();
-        jump();
-      });
-
-      canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        jump();
-      }, { passive: false });
+      canvas.addEventListener('click', (e) => { e.preventDefault(); jump(); });
+      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, { passive: false });
 
       gameRetryBtn.addEventListener('click', () => {
         haptic('impactOccurred');
@@ -1625,11 +1762,9 @@
 
       gameExitBtn.addEventListener('click', () => {
         haptic('selectionChanged');
-        closeGame();
-      });
-
-      window.addEventListener('resize', () => {
-        if (gameModal.classList.contains('open')) resizeCanvas();
+        gameState = 'idle';
+        if (animId) cancelAnimationFrame(animId);
+        gameModal.classList.remove('open');
       });
     })();
   </script>
