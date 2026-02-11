@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Счётчик калорий</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--tg-theme-bg-color, #18222d);
+      color: var(--tg-theme-text-color, #ffffff);
+      min-height: 100vh;
+      padding: 16px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      text-align: center;
+      color: var(--tg-theme-text-color, #ffffff);
+    }
+
+    .form {
+      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    .input-group:last-of-type {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      color: var(--tg-theme-hint-color, #8e8e93);
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background: var(--tg-theme-bg-color, #18222d);
+      color: var(--tg-theme-text-color, #ffffff);
+    }
+
+    input::placeholder {
+      color: var(--tg-theme-hint-color, #8e8e93);
+    }
+
+    input:focus {
+      outline: none;
+    }
+
+    .btn-add {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      background: var(--tg-theme-button-color, #2aabee);
+      color: var(--tg-theme-button-text-color, #ffffff);
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-add:active {
+      opacity: 0.8;
+    }
+
+    .total-block {
+      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .total-label {
+      font-size: 14px;
+      color: var(--tg-theme-hint-color, #8e8e93);
+      margin-bottom: 4px;
+    }
+
+    .total-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--tg-theme-button-color, #2aabee);
+    }
+
+    .list-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--tg-theme-text-color, #ffffff);
+    }
+
+    .food-list {
+      list-style: none;
+    }
+
+    .food-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .food-name {
+      font-weight: 500;
+      color: var(--tg-theme-text-color, #ffffff);
+    }
+
+    .food-calories {
+      font-weight: 600;
+      color: var(--tg-theme-button-color, #2aabee);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--tg-theme-hint-color, #8e8e93);
+      font-size: 15px;
+    }
+
+    .btn-delete {
+      background: transparent;
+      border: none;
+      color: var(--tg-theme-hint-color, #8e8e93);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      margin-left: 8px;
+      opacity: 0.7;
+    }
+
+    .btn-delete:hover {
+      opacity: 1;
+      color: #ff6b6b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍽 Счётчик калорий</h1>
+
+    <form class="form" id="foodForm">
+      <div class="input-group">
+        <label for="foodName">Название еды</label>
+        <input type="text" id="foodName" placeholder="Например: Овсянка" required>
+      </div>
+      <div class="input-group">
+        <label for="foodCalories">Калории</label>
+        <input type="number" id="foodCalories" placeholder="Например: 350" min="0" step="1" required>
+      </div>
+      <button type="submit" class="btn-add">Добавить</button>
+    </form>
+
+    <div class="total-block">
+      <div class="total-label">Калорий за сегодня</div>
+      <div class="total-value" id="totalCalories">0</div>
+    </div>
+
+    <div class="list-title">Ваш список</div>
+    <ul class="food-list" id="foodList">
+      <li class="empty-state" id="emptyState">Пока ничего не добавлено</li>
+    </ul>
+  </div>
+
+  <script>
+    // Инициализация Telegram Web App
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      document.body.style.background = tg.themeParams?.bg_color || document.body.style.background;
+    }
+
+    const FOOD_STORAGE_KEY = 'calorie_app_foods';
+
+    function getTodayKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    function getFoods() {
+      try {
+        const data = JSON.parse(localStorage.getItem(FOOD_STORAGE_KEY) || '{}');
+        const today = getTodayKey();
+        return data[today] || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveFoods(foods) {
+      const data = JSON.parse(localStorage.getItem(FOOD_STORAGE_KEY) || '{}');
+      data[getTodayKey()] = foods;
+      localStorage.setItem(FOOD_STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function renderList() {
+      const foods = getFoods();
+      const listEl = document.getElementById('foodList');
+      const emptyState = document.getElementById('emptyState');
+      const totalEl = document.getElementById('totalCalories');
+
+      const total = foods.reduce((sum, f) => sum + f.calories, 0);
+      totalEl.textContent = total;
+
+      if (foods.length === 0) {
+        listEl.innerHTML = '<li class="empty-state" id="emptyState">Пока ничего не добавлено</li>';
+        return;
+      }
+
+      listEl.innerHTML = foods.map((food, index) => `
+        <li class="food-item">
+          <span class="food-name">${escapeHtml(food.name)}</span>
+          <span>
+            <span class="food-calories">${food.calories} ккал</span>
+            <button type="button" class="btn-delete" data-index="${index}" aria-label="Удалить">×</button>
+          </span>
+        </li>
+      `).join('');
+
+      listEl.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const newFoods = getFoods().filter((_, i) => i !== idx);
+          saveFoods(newFoods);
+          renderList();
+        });
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    document.getElementById('foodForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('foodName');
+      const caloriesInput = document.getElementById('foodCalories');
+      const name = nameInput.value.trim();
+      const calories = parseInt(caloriesInput.value, 10);
+
+      if (!name || isNaN(calories) || calories < 0) return;
+
+      const foods = getFoods();
+      foods.push({ name, calories });
+      saveFoods(foods);
+      renderList();
+
+      nameInput.value = '';
+      caloriesInput.value = '';
+      nameInput.focus();
+
+      if (tg?.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
+    });
+
+    renderList();
+  </script>
+</body>
+</html>
