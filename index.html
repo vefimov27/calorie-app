@@ -203,11 +203,167 @@
       opacity: 1;
       color: #ff6b6b;
     }
+
+    /* Модалка цели */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--tg-theme-text-color, #ffffff);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .modal-subtitle {
+      font-size: 14px;
+      color: var(--tg-theme-hint-color, #8e8e93);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .modal .input-group {
+      margin-bottom: 20px;
+    }
+
+    .modal .btn-add {
+      margin-top: 4px;
+    }
+
+    /* Прогресс-бар */
+    .progress-section {
+      background: var(--tg-theme-secondary-bg-color, #242f3d);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .progress-label {
+      font-size: 13px;
+      color: var(--tg-theme-hint-color, #8e8e93);
+    }
+
+    .progress-goal {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--tg-theme-text-color, #ffffff);
+    }
+
+    .btn-edit-goal {
+      background: transparent;
+      border: none;
+      color: var(--tg-theme-hint-color, #8e8e93);
+      padding: 2px;
+      cursor: pointer;
+      font-size: 14px;
+      opacity: 0.8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-edit-goal:hover,
+    .btn-edit-goal:active {
+      opacity: 1;
+      color: var(--tg-theme-button-color, #2aabee);
+    }
+
+    .progress-bar-wrap {
+      height: 8px;
+      background: var(--tg-theme-bg-color, #18222d);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--tg-theme-button-color, #2aabee);
+      transition: width 0.3s ease, background 0.2s ease;
+    }
+
+    .progress-bar-fill.over-limit {
+      background: var(--tg-theme-destructive-text-color, #ff6b6b);
+    }
   </style>
 </head>
 <body>
+  <!-- Модалка первой настройки цели -->
+  <div class="modal-overlay" id="goalModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-title">🎯 Ваша цель</div>
+      <div class="modal-subtitle">Сколько калорий планируете съедать в день?</div>
+      <form id="goalForm">
+        <div class="input-group">
+          <label for="goalInput">Цель (ккал в день)</label>
+          <input type="number" id="goalInput" placeholder="Например: 2000" min="500" max="10000" step="50" required>
+        </div>
+        <button type="submit" class="btn-add">Сохранить</button>
+      </form>
+    </div>
+  </div>
+
   <div class="container">
     <h1>🍽 Счётчик калорий</h1>
+
+    <!-- Прогресс-бар цели -->
+    <div class="progress-section" id="progressSection" style="display: none;">
+      <div class="progress-header">
+        <span class="progress-label" id="progressLabel">0 / 0 ккал</span>
+        <span class="progress-goal">
+          Цель: <span id="goalValue">0</span> ккал
+          <button type="button" class="btn-edit-goal" id="btnEditGoal" aria-label="Изменить цель">✎</button>
+        </span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+      </div>
+    </div>
 
     <form class="form" id="foodForm">
       <div class="input-group" id="foodNameGroup">
@@ -243,6 +399,48 @@
     }
 
     const FOOD_STORAGE_KEY = 'calorie_app_foods';
+    const GOAL_STORAGE_KEY = 'calorie_app_goal';
+
+    function getGoal() {
+      const v = localStorage.getItem(GOAL_STORAGE_KEY);
+      return v ? parseInt(v, 10) : null;
+    }
+
+    function setGoal(value) {
+      localStorage.setItem(GOAL_STORAGE_KEY, String(value));
+    }
+
+    function showGoalModal() {
+      document.getElementById('goalModal').style.display = 'flex';
+    }
+
+    function hideGoalModal() {
+      document.getElementById('goalModal').style.display = 'none';
+    }
+
+    function updateProgress(total, goal) {
+      const section = document.getElementById('progressSection');
+      const label = document.getElementById('progressLabel');
+      const goalValue = document.getElementById('goalValue');
+      const fill = document.getElementById('progressBarFill');
+
+      if (!goal || goal <= 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      label.textContent = total + ' / ' + goal + ' ккал';
+      goalValue.textContent = goal;
+
+      const percent = Math.min((total / goal) * 100, 100);
+      fill.style.width = percent + '%';
+      fill.classList.toggle('over-limit', total > goal);
+
+      if (total > goal) {
+        fill.style.width = '100%';
+      }
+    }
 
     const FOOD_DATABASE = [
       { name: 'Куриное филе', calories: 165 },
@@ -326,11 +524,11 @@
     function renderList() {
       const foods = getFoods();
       const listEl = document.getElementById('foodList');
-      const emptyState = document.getElementById('emptyState');
       const totalEl = document.getElementById('totalCalories');
-
       const total = foods.reduce((sum, f) => sum + f.calories, 0);
+
       totalEl.textContent = total;
+      updateProgress(total, getGoal());
 
       if (foods.length === 0) {
         listEl.innerHTML = '<li class="empty-state" id="emptyState">Пока ничего не добавлено</li>';
@@ -410,6 +608,32 @@
     nameInput.addEventListener('blur', () => setTimeout(hideSuggestions, 200));
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#foodNameGroup')) hideSuggestions();
+    });
+
+    // Модалка и цель
+    const goalModal = document.getElementById('goalModal');
+    const goalForm = document.getElementById('goalForm');
+    const goalInput = document.getElementById('goalInput');
+    const btnEditGoal = document.getElementById('btnEditGoal');
+
+    if (!getGoal()) {
+      showGoalModal();
+    }
+
+    goalForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = parseInt(goalInput.value, 10);
+      if (isNaN(val) || val < 500 || val > 10000) return;
+      setGoal(val);
+      hideGoalModal();
+      renderList();
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    });
+
+    btnEditGoal.addEventListener('click', () => {
+      goalInput.value = getGoal() || 2000;
+      showGoalModal();
+      goalInput.focus();
     });
 
     document.getElementById('foodForm').addEventListener('submit', (e) => {
